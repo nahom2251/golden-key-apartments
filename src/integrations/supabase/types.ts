@@ -14,16 +14,228 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      apartments: {
+        Row: {
+          created_at: string
+          floor: number
+          id: string
+          label: string
+          position: string
+        }
+        Insert: {
+          created_at?: string
+          floor: number
+          id?: string
+          label: string
+          position: string
+        }
+        Update: {
+          created_at?: string
+          floor?: number
+          id?: string
+          label?: string
+          position?: string
+        }
+        Relationships: []
+      }
+      electricity_bills: {
+        Row: {
+          billing_date: string
+          created_at: string
+          id: string
+          is_paid: boolean
+          kwh_used: number
+          paid_at: string | null
+          rate: number
+          service_fee: number
+          tax_rate: number
+          tenant_id: string
+          total: number
+          tv_fee: number
+        }
+        Insert: {
+          billing_date?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          kwh_used: number
+          paid_at?: string | null
+          rate: number
+          service_fee?: number
+          tax_rate?: number
+          tenant_id: string
+          total: number
+          tv_fee?: number
+        }
+        Update: {
+          billing_date?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          kwh_used?: number
+          paid_at?: string | null
+          rate?: number
+          service_fee?: number
+          tax_rate?: number
+          tenant_id?: string
+          total?: number
+          tv_fee?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "electricity_bills_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          is_approved: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_approved?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          is_approved?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tenants: {
+        Row: {
+          apartment_id: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          move_in_date: string
+          name: string
+          payment_period_months: number
+          phone: string
+          rent_price: number
+          updated_at: string
+        }
+        Insert: {
+          apartment_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          move_in_date: string
+          name: string
+          payment_period_months?: number
+          phone: string
+          rent_price: number
+          updated_at?: string
+        }
+        Update: {
+          apartment_id?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          move_in_date?: string
+          name?: string
+          payment_period_months?: number
+          phone?: string
+          rent_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenants_apartment_id_fkey"
+            columns: ["apartment_id"]
+            isOneToOne: false
+            referencedRelation: "apartments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      water_bills: {
+        Row: {
+          amount: number
+          billing_date: string
+          created_at: string
+          id: string
+          is_paid: boolean
+          paid_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount: number
+          billing_date?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          paid_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount?: number
+          billing_date?: string
+          created_at?: string
+          id?: string
+          is_paid?: boolean
+          paid_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "water_bills_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +362,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
