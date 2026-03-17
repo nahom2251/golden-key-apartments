@@ -30,25 +30,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set up listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        // Check role
-        const { data: roleData } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
+        // Fetch role and profile in parallel
+        const [{ data: roleData }, { data: profile }] = await Promise.all([
+          supabase.from('user_roles').select('role').eq('user_id', session.user.id).maybeSingle(),
+          supabase.from('profiles').select('is_approved').eq('user_id', session.user.id).maybeSingle(),
+        ]);
         setIsAdmin(roleData?.role === 'admin');
-
-        // Check approval
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_approved')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
         setIsApproved(profile?.is_approved ?? false);
       } else {
         setIsAdmin(false);
@@ -57,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
+    // Then check current session — set loading false immediately if no session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) setLoading(false);
     });
