@@ -4,8 +4,8 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const [phase, setPhase] = useState<'logo' | 'fade-out'>('logo');
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('fade-out'), 1200);
-    const t2 = setTimeout(onFinish, 1700);
+    const t1 = setTimeout(() => setPhase('fade-out'), 800);
+    const t2 = setTimeout(onFinish, 1200);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onFinish]);
 
