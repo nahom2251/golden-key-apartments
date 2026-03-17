@@ -57,7 +57,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
         style={{ background: 'hsl(38 80% 45% / 0.25)' }}
       >
         <div
-          className="h-full rounded-full animate-[splash-bar_2s_ease-in-out_both]"
+          className="h-full rounded-full animate-[splash-bar_1.1s_ease-in-out_both]"
           style={{ background: 'hsl(30 30% 15% / 0.6)' }}
         />
       </div>
