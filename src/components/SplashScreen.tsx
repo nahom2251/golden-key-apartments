@@ -4,8 +4,8 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
   const [phase, setPhase] = useState<'logo' | 'fade-out'>('logo');
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('fade-out'), 2200);
-    const t2 = setTimeout(onFinish, 2800);
+    const t1 = setTimeout(() => setPhase('fade-out'), 1200);
+    const t2 = setTimeout(onFinish, 1700);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [onFinish]);
 
@@ -57,7 +57,7 @@ export default function SplashScreen({ onFinish }: { onFinish: () => void }) {
         style={{ background: 'hsl(38 80% 45% / 0.25)' }}
       >
         <div
-          className="h-full rounded-full animate-[splash-bar_2s_ease-in-out_both]"
+          className="h-full rounded-full animate-[splash-bar_1.1s_ease-in-out_both]"
           style={{ background: 'hsl(30 30% 15% / 0.6)' }}
         />
       </div>
