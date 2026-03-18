@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/components/Layout';
 import { Users, Zap, Droplets, AlertTriangle } from 'lucide-react';
 import { differenceInDays, addMonths, parseISO } from 'date-fns';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TenantWithApt {
   id: string;
@@ -27,14 +28,15 @@ export default function Dashboard() {
   const [elecCount, setElecCount] = useState(0);
   const [waterCount, setWaterCount] = useState(0);
   const [overdueCount, setOverdueCount] = useState(0);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const load = async () => {
-      const { data: t } = await supabase
+      const { data: tData } = await supabase
         .from('tenants')
         .select('id, name, move_in_date, rent_price, payment_period_months, apartments(label)')
         .eq('is_active', true);
-      const tenantList = (t ?? []) as TenantWithApt[];
+      const tenantList = (tData ?? []) as TenantWithApt[];
       setTenants(tenantList);
 
       let overdue = 0;
@@ -54,31 +56,31 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <h1 className="font-display text-2xl font-bold mb-6">Dashboard</h1>
+      <h1 className="font-display text-2xl font-bold mb-6">{t('dashboard')}</h1>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard icon={Users} label="Active Tenants" value={tenants.length} />
-        <StatCard icon={Zap} label="Unpaid Electric" value={elecCount} color="text-amber-600" />
-        <StatCard icon={Droplets} label="Unpaid Water" value={waterCount} color="text-blue-500" />
-        <StatCard icon={AlertTriangle} label="Overdue" value={overdueCount} color="text-destructive" />
+        <StatCard icon={Users} label={t('activeTenants')} value={tenants.length} />
+        <StatCard icon={Zap} label={t('unpaidElectric')} value={elecCount} color="text-amber-600" />
+        <StatCard icon={Droplets} label={t('unpaidWater')} value={waterCount} color="text-blue-500" />
+        <StatCard icon={AlertTriangle} label={t('overdue')} value={overdueCount} color="text-destructive" />
       </div>
 
       <div className="card-luxury p-4">
-        <h2 className="font-display text-lg font-semibold mb-3">Tenant Payment Status</h2>
+        <h2 className="font-display text-lg font-semibold mb-3">{t('tenantPaymentStatus')}</h2>
         <div className="space-y-3">
-          {tenants.length === 0 && <p className="text-muted-foreground text-sm">No active tenants yet.</p>}
-          {tenants.map((t) => {
-            const next = getNextPaymentDate(t.move_in_date, t.payment_period_months);
+          {tenants.length === 0 && <p className="text-muted-foreground text-sm">{t('noActiveTenants')}</p>}
+          {tenants.map((tenant) => {
+            const next = getNextPaymentDate(tenant.move_in_date, tenant.payment_period_months);
             const daysLeft = differenceInDays(next, new Date());
             const isOverdue = daysLeft < 0;
             return (
-              <div key={t.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div key={tenant.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                 <div>
-                  <p className="font-medium text-sm">{t.name}</p>
-                  <p className="text-xs text-muted-foreground">{t.apartments?.label ?? 'Unassigned'}</p>
+                  <p className="font-medium text-sm">{tenant.name}</p>
+                  <p className="text-xs text-muted-foreground">{tenant.apartments?.label ?? t('unassigned')}</p>
                 </div>
                 <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${isOverdue ? 'status-overdue' : 'status-paid'}`}>
-                  {isOverdue ? `${Math.abs(daysLeft)}d overdue` : `${daysLeft}d left`}
+                  {isOverdue ? `${Math.abs(daysLeft)} ${t('daysOverdue')}` : `${daysLeft} ${t('daysLeft')}`}
                 </span>
               </div>
             );
@@ -98,3 +100,4 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
     </div>
   );
 }
+
