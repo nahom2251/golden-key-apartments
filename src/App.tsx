@@ -16,10 +16,11 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
+// ✅ Improved Loader (better UX)
 function RouteLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <p className="text-muted-foreground">Loading...</p>
+      <p className="text-muted-foreground">Loading page...</p>
     </div>
   );
 }
@@ -27,14 +28,27 @@ function RouteLoader() {
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, isApproved, isAdmin } = useAuth();
 
-  if (loading) return <RouteLoader />;
+  // ✅ Do NOT block entire app with heavy loader
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Checking authentication...</p>
+      </div>
+    );
+  }
+
   if (!user) return <Navigate to="/login" replace />;
+
   if (!isApproved && !isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="card-luxury p-8 text-center max-w-sm">
-          <h2 className="font-display text-xl font-bold mb-2">Awaiting Approval</h2>
-          <p className="text-sm text-muted-foreground">Your account is pending admin approval. Please check back later.</p>
+          <h2 className="font-display text-xl font-bold mb-2">
+            Awaiting Approval
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Your account is pending admin approval. Please check back later.
+          </p>
         </div>
       </div>
     );
@@ -46,7 +60,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function RootRoute() {
   const { user, loading } = useAuth();
 
-  if (loading) return <RouteLoader />;
+  // ✅ Prevent full blocking
+  if (loading) return null;
 
   return <Navigate to={user ? "/dashboard" : "/login"} replace />;
 }
@@ -59,15 +74,50 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
-            <Suspense fallback={<RouteLoader />}>
+            {/* ✅ Better Suspense fallback */}
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <p>Loading app...</p>
+                </div>
+              }
+            >
               <Routes>
                 <Route path="/" element={<RootRoute />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                <Route path="/tenants" element={<ProtectedRoute><Tenants /></ProtectedRoute>} />
-                <Route path="/billing" element={<ProtectedRoute><Billing /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/tenants"
+                  element={
+                    <ProtectedRoute>
+                      <Tenants />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/billing"
+                  element={
+                    <ProtectedRoute>
+                      <Billing />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <SettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
