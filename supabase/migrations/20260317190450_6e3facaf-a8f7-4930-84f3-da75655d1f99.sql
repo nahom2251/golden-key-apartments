@@ -148,3 +148,23 @@ $$ LANGUAGE plpgsql SET search_path = public;
 
 CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON public.tenants FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- ============================================
+-- CLEAR ALL RECORDED DATA (SAFE VERSION)
+-- ============================================
+
+-- Remove all electricity bills
+TRUNCATE TABLE public.electricity_bills RESTART IDENTITY CASCADE;
+
+-- Remove all water bills
+TRUNCATE TABLE public.water_bills RESTART IDENTITY CASCADE;
+
+-- Remove all tenants
+TRUNCATE TABLE public.tenants RESTART IDENTITY CASCADE;
+
+-- Optional: Remove profiles and user roles
+TRUNCATE TABLE public.user_roles RESTART IDENTITY;
+TRUNCATE TABLE public.profiles RESTART IDENTITY;
+
+-- Optional: Remove apartments (uncomment only if needed)
+-- TRUNCATE TABLE public.apartments RESTART IDENTITY;
