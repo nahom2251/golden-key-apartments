@@ -30,29 +30,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const fetchUserExtras = async (userId: string) => {
+      try {
+        const [{ data: roleData }, { data: profile }] = await Promise.all([
+          supabase.from('user_roles').select('role').eq('user_id', userId).maybeSingle(),
+          supabase.from('profiles').select('is_approved').eq('user_id', userId).maybeSingle(),
+        ]);
+
+        setIsAdmin(roleData?.role === 'admin');
+        setIsApproved(profile?.is_approved ?? false);
+      } catch (err) {
+        console.error("Error fetching user extras:", err);
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
+      // ✅ IMPORTANT: stop blocking UI immediately
+      setLoading(false);
+
       if (session?.user) {
-        // Fetch role and profile in parallel
-        const [{ data: roleData }, { data: profile }] = await Promise.all([
-          supabase.from('user_roles').select('role').eq('user_id', session.user.id).maybeSingle(),
-          supabase.from('profiles').select('is_approved').eq('user_id', session.user.id).maybeSingle(),
-        ]);
-        setIsAdmin(roleData?.role === 'admin');
-        setIsApproved(profile?.is_approved ?? false);
+        // 🔥 Fetch in background (non-blocking)
+        fetchUserExtras(session.user.id);
       } else {
         setIsAdmin(false);
         setIsApproved(false);
       }
-      setLoading(false);
     });
 
-    // Then check current session — set loading false immediately if no session
+    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) setLoading(false);
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+
+      if (session?.user) {
+        fetchUserExtras(session.user.id);
+      }
     });
 
     return () => subscription.unsubscribe();
